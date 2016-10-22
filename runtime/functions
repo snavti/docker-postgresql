@@ -1,5 +1,10 @@
 #!/bin/bash
 set -e
+
+### START - SHIYGHAN ADDED FOR DEBUGGING
+set -x
+### END - SHIYGHAN ADDED FOR DEBUGGING
+
 source ${PG_APP_HOME}/env-defaults
 
 PG_CONF=${PG_DATADIR}/postgresql.conf
@@ -25,13 +30,37 @@ map_uidgid() {
 }
 
 create_datadir() {
+### START - SHIYGHAN COMMENTED OUT DATADIR PERMISSION CHANGE TO OVERCOME BLUEMIX VOLUME NON-ROOT ACCESS ISSUE
+###   echo "Initializing datadir..."
+###   mkdir -p ${PG_HOME}
+###   if [[ -d ${PG_DATADIR} ]]; then
+###     find ${PG_DATADIR} -type f -exec chmod 0600 {} \;
+###     find ${PG_DATADIR} -type d -exec chmod 0700 {} \;
+###   fi
+###   chown -R ${PG_USER}:${PG_USER} ${PG_HOME}
+### END - SHIYGHAN COMMENTED OUT DATADIR PERMISSION CHANGE TO OVERCOME BLUEMIX VOLUME NON-ROOT ACCESS ISSUE
+  
+### START - SHIYGHAN IMPLEMENTED A NEW PROCESS FOR CREATING VOLUME WHICH IS WRITTABLE BY NON ROOT USER POSTGRES
+  echo "Checking if datadir exists before initializing..."
+  if [ ! exec_as_postgres -d "${PG_HOME}/${PG_VERSION}/main/base" ]; then
   echo "Initializing datadir..."
-  mkdir -p ${PG_HOME}
-  if [[ -d ${PG_DATADIR} ]]; then
-    find ${PG_DATADIR} -type f -exec chmod 0600 {} \;
-    find ${PG_DATADIR} -type d -exec chmod 0700 {} \;
+  echo "START: Hack for IBM Container Volumes"
+  # Bluemix hack for using NFS based Volumes.  We have to do some special things
+  # here because 'root' in a volume isn't the same as 'root' in the container.
+  # This leads to problems like the container 'root' being unable to access
+  # a directory created by the postgres use.
+  # set things up so we can modify with `postgres` user
+
+  echo "Add the non-root user to primary group of root user..."
+  adduser ${PG_USER} root
+  chmod 775 ${PG_HOME}
+  rm -rf ${PG_HOME}/${PG_VERSION}/*
+  su ${PG_USER} -c "mkdir -vp ${PG_HOME}/${PG_VERSION}"
+  su ${PG_USER} -c "ls -latR ${PG_HOME}"
+  deluser ${PG_USER} root
+  echo "END: Hack for IBM Container Volumes"
   fi
-  chown -R ${PG_USER}:${PG_USER} ${PG_HOME}
+### END - SHIYGHAN IMPLEMENTED A NEW PROCESS FOR CREATING VOLUME WHICH IS WRITTABLE BY NON ROOT USER POSTGRES
 }
 
 create_certdir() {
@@ -40,7 +69,10 @@ create_certdir() {
   [[ -f ${PG_CERTDIR}/server.crt ]] && chmod 0644 ${PG_CERTDIR}/server.crt
   [[ -f ${PG_CERTDIR}/server.key ]] && chmod 0640 ${PG_CERTDIR}/server.key
   chmod 0755 ${PG_CERTDIR}
-  chown -R root:${PG_USER} ${PG_CERTDIR}
+### START - SHIYGHAN COMMENTED OUT TO OVERCOME PERMISSION CHANGE ISSUE  
+###   chown -R root:${PG_USER} ${PG_CERTDIR}
+### END - SHIYGHAN COMMENTED OUT TO OVERCOME PERMISSION CHANGE ISSUE  
+
 }
 
 create_logdir() {
@@ -93,9 +125,18 @@ set_recovery_param() {
 
 set_hba_param() {
   local value=${1}
-  if ! grep -q "$(sed "s| | \\\+|g" <<< ${value})" ${PG_HBA_CONF}; then
-    echo "${value}" >> ${PG_HBA_CONF}
+
+### START - SHIYGHAN COMMENTED OUT
+###   if ! grep -q "$(sed "s| | \\\+|g" <<< ${value})" ${PG_HBA_CONF}; then
+###     echo "${value}" >> ${PG_HBA_CONF}
+###   fi
+### END - SHIYGHAN COMMENTED OUT
+  
+### START - SHIYGHAN ENABLED EXECUTION AS POSTGRESQL USER
+  if ! exec_as_postgres grep -q "$(sed "s| | \\\+|g" <<< ${value})" ${PG_HBA_CONF}; then
+     su ${PG_USER} -c "echo ${value} >> ${PG_HBA_CONF}"
   fi
+### END - SHIYGHAN ENABLED EXECUTION AS POSTGRESQL USER
 }
 
 configure_ssl() {
