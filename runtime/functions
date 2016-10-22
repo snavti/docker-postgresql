@@ -42,7 +42,7 @@ create_datadir() {
   
 ### START - SHIYGHAN IMPLEMENTED A NEW PROCESS FOR CREATING VOLUME WHICH IS WRITTABLE BY NON ROOT USER POSTGRES
   echo "Checking if datadir exists before initializing..."
-  if [ ! exec_as_postgres -d "${PG_HOME}/${PG_VERSION}/main/base" ]; then
+  if [ ! exec_as_postgres -d "${PG_HOME}" ]; then
   echo "Initializing datadir..."
   echo "START: Hack for IBM Container Volumes"
   # Bluemix hack for using NFS based Volumes.  We have to do some special things
