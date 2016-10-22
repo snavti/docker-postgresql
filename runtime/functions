@@ -173,7 +173,19 @@ configure_hot_standby() {
 }
 
 initialize_database() {
-  if [[ ! -f ${PG_DATADIR}/PG_VERSION ]]; then
+
+### START - SHIYGHAN CHANGED CHECK FROM ROOT DIRECTORY TO SUB-DIRECTORY
+###   if [[ ! -f ${PG_DATADIR}/PG_VERSION ]]; then 
+  if [[ ! -f ${PG_DATADIR}/${PG_VERSION}/main/base ]]; then
+  echo "Checking ${PG_DATADIR}..."
+  adduser ${PG_USER} root
+  su ${PG_USER} -c "chmod -vR 775 ${PG_HOME}/${PG_VERSION}"
+  su ${PG_USER} -c "mkdir -vp ${PG_HOME}/${PG_VERSION}/main"
+  su ${PG_USER} -c "chmod -vR 775 ${PG_HOME}/${PG_VERSION}/main"
+  su ${PG_USER} -c "rm -rvf ${PG_HOME}/${PG_VERSION}/main/*"
+  deluser ${PG_USER} root
+### START - SHIYGHAN CHANGED CHECK FROM ROOT DIRECTORY TO SUB-DIRECTORY
+
     case ${REPLICATION_MODE} in
       slave|snapshot|backup)
         if [[ -z $REPLICATION_HOST ]]; then
@@ -321,7 +333,10 @@ configure_recovery() {
     fi
   else
     # recovery.conf can only exist on a slave node, its existence otherwise causes problems
-    rm -rf ${PG_RECOVERY_CONF}
+### START - SHIYGHAN REMOVE DIRECTORY AS POSTGRES
+###     rm -rf ${PG_RECOVERY_CONF}   
+    su ${PG_USER} -c "rm -rf ${PG_RECOVERY_CONF}"
+### END - SHIYGHAN REMOVE DIRECTORY AS POSTGRES
   fi
 }
 
@@ -416,7 +431,11 @@ configure_postgresql() {
   configure_ssl
 
   # start postgres server internally for the creation of users and databases
-  rm -rf ${PG_DATADIR}/postmaster.pid
+### START - SHIYGHAN REMOVE FILE AS POSTGRES
+###   rm -rf ${PG_DATADIR}/postmaster.pid
+  su ${PG_USER} -c "rm -rf ${PG_DATADIR}/postmaster.pid"
+### START - SHIYGHAN REMOVE DIRECTORY AS POSTGRES
+
   set_postgresql_param "listen_addresses" "127.0.0.1" quiet
   exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w start >/dev/null
 
