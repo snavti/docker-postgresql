@@ -54,6 +54,7 @@ create_datadir() {
   echo "Add the non-root user to primary group of root user..."
   adduser ${PG_USER} root
   chmod -R 775 ${PG_HOME}
+  su ${PG_USER} -c "chmod -R 775 ${PG_HOME}/${PG_VERSION}"
   # rm -rf ${PG_HOME}/${PG_VERSION}/*
   su ${PG_USER} -c "mkdir -vp ${PG_HOME}/${PG_VERSION}"
   su ${PG_USER} -c "ls -latR ${PG_HOME}"
