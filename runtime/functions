@@ -176,7 +176,7 @@ initialize_database() {
 
 ### START - SHIYGHAN CHANGED CHECK FROM ROOT DIRECTORY TO SUB-DIRECTORY
 ###   if [[ ! -f ${PG_DATADIR}/PG_VERSION ]]; then 
-  if [[ ! -f ${PG_DATADIR}/${PG_VERSION}/main/base ]]; then
+  if [[ ! -f ${PG_DATADIR}/base ]]; then
   echo "Checking ${PG_DATADIR}..."
   adduser ${PG_USER} root
   su ${PG_USER} -c "chmod -vR 775 ${PG_HOME}/${PG_VERSION}"
