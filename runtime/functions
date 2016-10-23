@@ -323,7 +323,7 @@ configure_recovery() {
       adduser ${PG_USER} root
       su ${PG_USER} -c "touch ${PG_RECOVERY_CONF}"
       deluser ${PG_USER} root
-      ( echo "standby_mode = 'on'";
+      exec_as_postgres ( echo "standby_mode = 'on'";
         echo "primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${REPLICATION_SSLMODE}'";
       ) > ${PG_RECOVERY_CONF}
     else
