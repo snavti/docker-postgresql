@@ -440,6 +440,12 @@ configure_postgresql() {
   su ${PG_USER} -c "rm -rf ${PG_DATADIR}/postmaster.pid"
 ### START - SHIYGHAN REMOVE DIRECTORY AS POSTGRES
 
+### START - SHIYGHAN SET PERMISSIONS
+  adduser ${PG_USER} root
+  su ${PG_USER} -c "chmod -R 700 ${PG_HOME}/${PG_VERSION}/main"
+  deluser ${PG_USER} root
+### END - SHIYGHAN SET PERMISSIONS
+
   set_postgresql_param "listen_addresses" "127.0.0.1" quiet
   # exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w start >/dev/null
   exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w start
