@@ -12,7 +12,7 @@ ENV PG_APP_HOME="/etc/docker-postgresql"\
 ENV PG_BINDIR=/usr/lib/postgresql/${PG_VERSION}/bin \
     PG_DATADIR=${PG_HOME}/${PG_VERSION}/main
 
-### BEGIN - SHIYGHAN ADDED postgresql-${PG_VERSION}-postgis-2.2 postgresql-${PG_VERSION}-postgis-2.2-scripts
+### BEGIN - SHIYGHAN ADDED LINK TO recovery.conf as well as postgresql-${PG_VERSION}-postgis-2.2 postgresql-${PG_VERSION}-postgis-2.2-scripts
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
  && echo 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
  && apt-get update \
@@ -21,9 +21,10 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
  && ln -sf ${PG_DATADIR}/postgresql.conf /etc/postgresql/${PG_VERSION}/main/postgresql.conf \
  && ln -sf ${PG_DATADIR}/pg_hba.conf /etc/postgresql/${PG_VERSION}/main/pg_hba.conf \
  && ln -sf ${PG_DATADIR}/pg_ident.conf /etc/postgresql/${PG_VERSION}/main/pg_ident.conf \
+ && ln -sf ${PG_DATADIR}/recovery.conf /etc/postgresql/${PG_VERSION}/main/recovery.conf \
  && rm -rf ${PG_HOME} \
  && rm -rf /var/lib/apt/lists/*
-### END - SHIYGHAN ADDED postgresql-${PG_VERSION}-postgis-2.2 postgresql-${PG_VERSION}-postgis-2.2-scripts
+### END - SHIYGHAN ADDED LINK TO recovery.conf as well as postgresql-${PG_VERSION}-postgis-2.2 postgresql-${PG_VERSION}-postgis-2.2-scripts
 
 ### BEGIN - SHIYGHAN ADDED 
 #Create group and user with GID & UID 1010.
