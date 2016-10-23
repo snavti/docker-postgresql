@@ -322,9 +322,11 @@ configure_recovery() {
       # initialize recovery.conf on the firstrun (slave only)
       adduser ${PG_USER} root
       su ${PG_USER} -c "touch ${PG_RECOVERY_CONF}"
-      su ${PG_USER} -c "chmod -v 660 ${PG_RECOVERY_CONF}"
-      exec_as_postgres echo "standby_mode = 'on'" > ${PG_RECOVERY_CONF}
-      exec_as_postgres echo "primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${REPLICATION_SSLMODE}'" > ${PG_RECOVERY_CONF}
+      # su ${PG_USER} -c "chmod -v 660 ${PG_RECOVERY_CONF}"
+      # exec_as_postgres echo "standby_mode = 'on'" > ${PG_RECOVERY_CONF}
+      su ${PG_USER} -c "echo \"standby_mode = 'on'\" >> ${PG_RECOVERY_CONF}"
+      # exec_as_postgres echo "primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${REPLICATION_SSLMODE}'" > ${PG_RECOVERY_CONF}
+      su ${PG_USER} -c "echo \"primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${REPLICATION_SSLMODE}'\" >> ${PG_RECOVERY_CONF}"
       deluser ${PG_USER} root
     else
       set_recovery_param "host"      "${REPLICATION_HOST}"
