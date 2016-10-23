@@ -69,8 +69,6 @@ create_certdir() {
   mkdir -p ${PG_CERTDIR}
   [[ -f ${PG_CERTDIR}/server.crt ]] && chmod 0644 ${PG_CERTDIR}/server.crt
   [[ -f ${PG_CERTDIR}/server.key ]] && chmod 0640 ${PG_CERTDIR}/server.key
-  su ${PG_USER} -c "cat ${PG_CERTDIR}/server.crt"            
-  su ${PG_USER} -c "cat ${PG_CERTDIR}/server.key"            
   chmod 0755 ${PG_CERTDIR}
 ### START - SHIYGHAN COMMENTED OUT TO OVERCOME PERMISSION CHANGE ISSUE  
 ###   chown -R root:${PG_USER} ${PG_CERTDIR}
