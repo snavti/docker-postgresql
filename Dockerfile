@@ -1,5 +1,5 @@
 FROM sameersbn/ubuntu:14.04.20160827
-MAINTAINER sameer@damagehead.com
+MAINTAINER helpdesk@techequity.support
 
 ENV PG_APP_HOME="/etc/docker-postgresql"\
     PG_VERSION=9.5 \
