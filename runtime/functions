@@ -441,14 +441,16 @@ configure_postgresql() {
 ### START - SHIYGHAN REMOVE DIRECTORY AS POSTGRES
 
   set_postgresql_param "listen_addresses" "127.0.0.1" quiet
-  exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w start >/dev/null
+  # exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w start >/dev/null
+  exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w start
 
   create_user
   create_database
   create_replication_user
 
   # stop the postgres server
-  exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w stop >/dev/null
+  # exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w stop >/dev/null
+  exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w stop
 
   # listen on all interfaces
   set_postgresql_param "listen_addresses" "*" quiet
