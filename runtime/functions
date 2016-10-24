@@ -1,9 +1,6 @@
 #!/bin/bash
 set -e
-
-### START - SHIYGHAN ADDED FOR DEBUGGING
 set -x
-### END - SHIYGHAN ADDED FOR DEBUGGING
 
 source ${PG_APP_HOME}/env-defaults
 
@@ -29,18 +26,7 @@ map_uidgid() {
   fi
 }
 
-create_datadir() {
-### START - SHIYGHAN COMMENTED OUT DATADIR PERMISSION CHANGE TO OVERCOME BLUEMIX VOLUME NON-ROOT ACCESS ISSUE
-###   echo "Initializing datadir..."
-###   mkdir -p ${PG_HOME}
-###   if [[ -d ${PG_DATADIR} ]]; then
-###     find ${PG_DATADIR} -type f -exec chmod 0600 {} \;
-###     find ${PG_DATADIR} -type d -exec chmod 0700 {} \;
-###   fi
-###   chown -R ${PG_USER}:${PG_USER} ${PG_HOME}
-### END - SHIYGHAN COMMENTED OUT DATADIR PERMISSION CHANGE TO OVERCOME BLUEMIX VOLUME NON-ROOT ACCESS ISSUE
-  
-### START - SHIYGHAN IMPLEMENTED A NEW PROCESS FOR CREATING VOLUME WHICH IS WRITTABLE BY NON ROOT USER POSTGRES
+create_datadir() {  
   echo "Checking if datadir exists before initializing..."
   if [[ ! -d "${PG_DATADIR}" ]]; then
   echo "Initializing datadir..."
@@ -61,7 +47,6 @@ create_datadir() {
   deluser ${PG_USER} root
   echo "END: Hack for IBM Container Volumes"
   fi
-### END - SHIYGHAN IMPLEMENTED A NEW PROCESS FOR CREATING VOLUME WHICH IS WRITTABLE BY NON ROOT USER POSTGRES
 }
 
 create_certdir() {
@@ -70,9 +55,6 @@ create_certdir() {
   [[ -f ${PG_CERTDIR}/server.crt ]] && chmod 0644 ${PG_CERTDIR}/server.crt
   [[ -f ${PG_CERTDIR}/server.key ]] && chmod 0640 ${PG_CERTDIR}/server.key
   chmod 0755 ${PG_CERTDIR}
-### START - SHIYGHAN COMMENTED OUT TO OVERCOME PERMISSION CHANGE ISSUE  
-###   chown -R root:${PG_USER} ${PG_CERTDIR}
-### END - SHIYGHAN COMMENTED OUT TO OVERCOME PERMISSION CHANGE ISSUE  
 }
 
 create_logdir() {
@@ -103,7 +85,6 @@ set_postgresql_param() {
       fi
       value="$(echo "${value}" | sed 's|[&]|\\&|g')"
       exec_as_postgres sed -i "s|^[#]*[ ]*${key} = .*|${key} = '${value}'|" ${PG_CONF}
-      su ${PG_USER} -c "cat ${PG_CONF}"            
     fi
   fi
 }
@@ -120,7 +101,6 @@ set_recovery_param() {
         *) echo "‣ Setting primary_conninfo parameter: ${key} = '${value}'" ;;
       esac
       exec_as_postgres sed -i "s|${key}=[^ ']*|${key}=${value}|" ${PG_RECOVERY_CONF}
-      su ${PG_USER} -c "cat ${PG_RECOVERY_CONF}"      
     fi
   fi
 }
@@ -128,18 +108,9 @@ set_recovery_param() {
 set_hba_param() {
   local value=${1}
 
-### START - SHIYGHAN COMMENTED OUT
-###   if ! grep -q "$(sed "s| | \\\+|g" <<< ${value})" ${PG_HBA_CONF}; then
-###     echo "${value}" >> ${PG_HBA_CONF}
-###   fi
-### END - SHIYGHAN COMMENTED OUT
-  
-### START - SHIYGHAN ENABLED EXECUTION AS POSTGRESQL USER
   if ! exec_as_postgres grep -q "$(sed "s| | \\\+|g" <<< ${value})" ${PG_HBA_CONF}; then
      su ${PG_USER} -c "echo ${value} >> ${PG_HBA_CONF}"
-     su ${PG_USER} -c "cat ${PG_HBA_CONF}"
   fi
-### END - SHIYGHAN ENABLED EXECUTION AS POSTGRESQL USER
 }
 
 configure_ssl() {
@@ -177,8 +148,6 @@ configure_hot_standby() {
 
 initialize_database() {
 
-### START - SHIYGHAN CHANGED CHECK FROM ROOT DIRECTORY TO SUB-DIRECTORY
-###   if [[ ! -f ${PG_DATADIR}/PG_VERSION ]]; then 
   if [[ ! -d ${PG_DATADIR} ]]; then
   echo "Checking ${PG_DATADIR}..."
   adduser ${PG_USER} root
@@ -187,7 +156,6 @@ initialize_database() {
   su ${PG_USER} -c "chmod -vR 775 ${PG_HOME}/${PG_VERSION}/main"
   su ${PG_USER} -c "rm -rvf ${PG_HOME}/${PG_VERSION}/main/*"
   deluser ${PG_USER} root
-### START - SHIYGHAN CHANGED CHECK FROM ROOT DIRECTORY TO SUB-DIRECTORY
 
     case ${REPLICATION_MODE} in
       slave|snapshot|backup)
@@ -224,20 +192,17 @@ initialize_database() {
           slave)
             echo "Replicating initial data from $REPLICATION_HOST..."
             exec_as_postgres PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
-              -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X stream -w
-#              -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X stream -w >/dev/null
+              -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X stream -w >/dev/null
            ;;
           snapshot)
             echo "Generating a snapshot data on $REPLICATION_HOST..."
             exec_as_postgres PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
-              -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X fetch -w
-#              -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X fetch -w >/dev/null
+              -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X fetch -w >/dev/null
             ;;
           backup)
             echo "Backing up data on $REPLICATION_HOST..."
             exec_as_postgres PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
-              -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X fetch -w
-#              -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X fetch -w >/dev/null
+              -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X fetch -w >/dev/null
             exit 0
             ;;
         esac
@@ -271,8 +236,7 @@ initialize_database() {
         fi
 
         exec_as_postgres ${PG_BINDIR}/initdb --pgdata=${PG_DATADIR} \
-          --username=${PG_USER} --encoding=unicode --auth=trust ${PG_PASSWORD:+--pwfile=/tmp/pwfile}
-#          --username=${PG_USER} --encoding=unicode --auth=trust ${PG_PASSWORD:+--pwfile=/tmp/pwfile} >/dev/null
+          --username=${PG_USER} --encoding=unicode --auth=trust ${PG_PASSWORD:+--pwfile=/tmp/pwfile} >/dev/null
 
         if [[ -n ${PG_OLD_VERSION} ]]; then
           PG_OLD_BINDIR=/usr/lib/postgresql/${PG_OLD_VERSION}/bin
@@ -286,8 +250,7 @@ initialize_database() {
             -b ${PG_OLD_BINDIR} -B ${PG_BINDIR} \
             -d ${PG_OLD_DATADIR} -D ${PG_DATADIR} \
             -o "-c config_file=${PG_OLD_CONF} --hba_file=${PG_OLD_HBA_CONF} --ident_file=${PG_OLD_IDENT_CONF}" \
-            -O "-c config_file=${PG_CONF} --hba_file=${PG_HBA_CONF} --ident_file=${PG_IDENT_CONF}"
-#            -O "-c config_file=${PG_CONF} --hba_file=${PG_HBA_CONF} --ident_file=${PG_IDENT_CONF}" >/dev/null
+            -O "-c config_file=${PG_CONF} --hba_file=${PG_HBA_CONF} --ident_file=${PG_IDENT_CONF}" >/dev/null
           echo
         fi
         ;;
@@ -331,10 +294,7 @@ configure_recovery() {
       # initialize recovery.conf on the firstrun (slave only)
       adduser ${PG_USER} root
       su ${PG_USER} -c "touch ${PG_RECOVERY_CONF}"
-      # su ${PG_USER} -c "chmod -v 660 ${PG_RECOVERY_CONF}"
-      # exec_as_postgres echo "standby_mode = 'on'" > ${PG_RECOVERY_CONF}
       su ${PG_USER} -c "echo \"standby_mode = 'on'\" >> ${PG_RECOVERY_CONF}"
-      # exec_as_postgres echo "primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${REPLICATION_SSLMODE}'" > ${PG_RECOVERY_CONF}
       su ${PG_USER} -c "echo \"primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${REPLICATION_SSLMODE}'\" >> ${PG_RECOVERY_CONF}"
       su ${PG_USER} -c "cat ${PG_RECOVERY_CONF}"
       deluser ${PG_USER} root
@@ -347,10 +307,7 @@ configure_recovery() {
     fi
   else
     # recovery.conf can only exist on a slave node, its existence otherwise causes problems
-### START - SHIYGHAN REMOVE DIRECTORY AS POSTGRES
-###     rm -rf ${PG_RECOVERY_CONF}   
     su ${PG_USER} -c "rm -rf ${PG_RECOVERY_CONF}"
-### END - SHIYGHAN REMOVE DIRECTORY AS POSTGRES
   fi
 }
 
@@ -367,8 +324,7 @@ create_user() {
         fi
         echo "Creating database user: ${DB_USER}"
         if [[ -z $(psql -U ${PG_USER} -Atc "SELECT 1 FROM pg_catalog.pg_user WHERE usename = '${DB_USER}'";) ]]; then
-          psql -U ${PG_USER} -c "CREATE ROLE \"${DB_USER}\" with LOGIN CREATEDB PASSWORD '${DB_PASS}';"
-#          psql -U ${PG_USER} -c "CREATE ROLE \"${DB_USER}\" with LOGIN CREATEDB PASSWORD '${DB_PASS}';" >/dev/null
+          psql -U ${PG_USER} -c "CREATE ROLE \"${DB_USER}\" with LOGIN CREATEDB PASSWORD '${DB_PASS}';" >/dev/null
         fi
         ;;
     esac
@@ -404,16 +360,14 @@ create_database() {
         for database in $(awk -F',' '{for (i = 1 ; i <= NF ; i++) print $i}' <<< "${DB_NAME}"); do
           echo "Creating database: ${database}..."
           if [[ -z $(psql -U ${PG_USER} -Atc "SELECT 1 FROM pg_catalog.pg_database WHERE datname = '${database}'";) ]]; then
-            psql -U ${PG_USER} -c "CREATE DATABASE \"${database}\" WITH TEMPLATE = \"${DB_TEMPLATE}\";"
-#            psql -U ${PG_USER} -c "CREATE DATABASE \"${database}\" WITH TEMPLATE = \"${DB_TEMPLATE}\";" >/dev/null
+            psql -U ${PG_USER} -c "CREATE DATABASE \"${database}\" WITH TEMPLATE = \"${DB_TEMPLATE}\";" >/dev/null
           fi
 
           load_extensions ${database}
 
           if [[ -n ${DB_USER} ]]; then
             echo "‣ Granting access to ${DB_USER} user..."
-            psql -U ${PG_USER} -c "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" to \"${DB_USER}\";"
-#            psql -U ${PG_USER} -c "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" to \"${DB_USER}\";" >/dev/null
+            psql -U ${PG_USER} -c "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" to \"${DB_USER}\";" >/dev/null
           fi
         done
         ;;
@@ -433,8 +387,7 @@ create_replication_user() {
 
         echo "Creating replication user: ${REPLICATION_USER}"
         if [[ -z $(psql -U ${PG_USER} -Atc "SELECT 1 FROM pg_catalog.pg_user WHERE usename = '${REPLICATION_USER}'";) ]]; then
-          psql -U ${PG_USER} -c "CREATE ROLE \"${REPLICATION_USER}\" WITH REPLICATION LOGIN ENCRYPTED PASSWORD '${REPLICATION_PASS}';"
-#          psql -U ${PG_USER} -c "CREATE ROLE \"${REPLICATION_USER}\" WITH REPLICATION LOGIN ENCRYPTED PASSWORD '${REPLICATION_PASS}';" >/dev/null
+          psql -U ${PG_USER} -c "CREATE ROLE \"${REPLICATION_USER}\" WITH REPLICATION LOGIN ENCRYPTED PASSWORD '${REPLICATION_PASS}';" >/dev/null
         fi
 
         set_hba_param "host replication ${REPLICATION_USER} 0.0.0.0/0 md5"
@@ -449,28 +402,20 @@ configure_postgresql() {
   configure_ssl
 
   # start postgres server internally for the creation of users and databases
-### START - SHIYGHAN REMOVE FILE AS POSTGRES
-###   rm -rf ${PG_DATADIR}/postmaster.pid
   su ${PG_USER} -c "rm -rf ${PG_DATADIR}/postmaster.pid"
-### START - SHIYGHAN REMOVE DIRECTORY AS POSTGRES
-
-### START - SHIYGHAN SET PERMISSIONS
   adduser ${PG_USER} root
   su ${PG_USER} -c "chmod -R 700 ${PG_HOME}/${PG_VERSION}/main"
   deluser ${PG_USER} root
-### END - SHIYGHAN SET PERMISSIONS
 
   set_postgresql_param "listen_addresses" "127.0.0.1" quiet
-  # exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w start >/dev/null
-  exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w start
+  exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w start >/dev/null
 
   create_user
   create_database
   create_replication_user
 
   # stop the postgres server
-  # exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w stop >/dev/null
-  exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w stop
+  exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w stop >/dev/null
 
   # listen on all interfaces
   set_postgresql_param "listen_addresses" "*" quiet
