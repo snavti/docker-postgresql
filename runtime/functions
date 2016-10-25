@@ -144,7 +144,6 @@ configure_hot_standby() {
 initialize_database() {
 
   if [[ ! -d ${PG_DATADIR} ]]; then
-  echo "Checking ${PG_DATADIR}..."
   adduser ${PG_USER} root
   su ${PG_USER} -c "chmod -R 775 ${PG_HOME}/${PG_VERSION}"
   su ${PG_USER} -c "mkdir -p ${PG_HOME}/${PG_VERSION}/main"
@@ -279,7 +278,6 @@ initialize_database() {
 set_resolvconf_perms() {
   echo "Setting resolv.conf ACLs..."
   setfacl -m user:${PG_USER}:r /etc/resolv.conf || true
-  su ${PG_USER} -c "cat /etc/resolv.conf"
 }
 
 configure_recovery() {
