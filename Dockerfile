@@ -41,14 +41,14 @@ RUN chmod 755 /etc/cron.d/backup
 
 # Add files
 COPY pg_backup.sh ${PG_HOME}
-RUN chmod 0770 ${PG_HOME}/pg_backup.sh
+RUN chmod 775 ${PG_HOME}/pg_backup.sh
 RUN touch ${PG_HOME}/pg_backup.log
-RUN chmod 0660 ${PG_HOME}/pg_backup.log
+RUN chmod 660 ${PG_HOME}/pg_backup.log
 ### END - SHIYGHAN ADDED 
 
 COPY runtime/ ${PG_APP_HOME}/
 COPY entrypoint.sh /sbin/entrypoint.sh
-RUN chmod 0770 /sbin/entrypoint.sh
+RUN chmod 775 /sbin/entrypoint.sh
 
 EXPOSE 5432/tcp
 VOLUME ["${PG_HOME}", "${PG_RUNDIR}"]
