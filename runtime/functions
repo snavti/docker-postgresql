@@ -26,24 +26,21 @@ map_uidgid() {
 }
 
 create_datadir() {  
-  echo "Checking if datadir exists before initializing..."
   if [[ ! -d "${PG_DATADIR}" ]]; then
   echo "Initializing datadir..."
-  echo "START: Hack for IBM Container Volumes"
   # Bluemix hack for using NFS based Volumes.  We have to do some special things
   # here because 'root' in a volume isn't the same as 'root' in the container.
   # This leads to problems like the container 'root' being unable to access
   # a directory created by the postgres use.
   # set things up so we can modify with `postgres` user
 
-  echo "Add the non-root user to primary group of root user..."
+  # Add the non-root user to primary group of root user...
   adduser ${PG_USER} root
   chmod -R 775 ${PG_HOME}
   # rm -rf ${PG_HOME}/${PG_VERSION}/*
   su ${PG_USER} -c "mkdir -p ${PG_HOME}/${PG_VERSION}"
   su ${PG_USER} -c "chmod -R 775 ${PG_HOME}/${PG_VERSION}"
   deluser ${PG_USER} root
-  echo "END: Hack for IBM Container Volumes"
   fi
 }
 
