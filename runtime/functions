@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-set -x
 
 source ${PG_APP_HOME}/env-defaults
 
@@ -41,9 +40,8 @@ create_datadir() {
   adduser ${PG_USER} root
   chmod -R 775 ${PG_HOME}
   # rm -rf ${PG_HOME}/${PG_VERSION}/*
-  su ${PG_USER} -c "mkdir -vp ${PG_HOME}/${PG_VERSION}"
+  su ${PG_USER} -c "mkdir -p ${PG_HOME}/${PG_VERSION}"
   su ${PG_USER} -c "chmod -R 775 ${PG_HOME}/${PG_VERSION}"
-  su ${PG_USER} -c "ls -latR ${PG_HOME}"
   deluser ${PG_USER} root
   echo "END: Hack for IBM Container Volumes"
   fi
@@ -151,10 +149,10 @@ initialize_database() {
   if [[ ! -d ${PG_DATADIR} ]]; then
   echo "Checking ${PG_DATADIR}..."
   adduser ${PG_USER} root
-  su ${PG_USER} -c "chmod -vR 775 ${PG_HOME}/${PG_VERSION}"
-  su ${PG_USER} -c "mkdir -vp ${PG_HOME}/${PG_VERSION}/main"
-  su ${PG_USER} -c "chmod -vR 775 ${PG_HOME}/${PG_VERSION}/main"
-  su ${PG_USER} -c "rm -rvf ${PG_HOME}/${PG_VERSION}/main/*"
+  su ${PG_USER} -c "chmod -R 775 ${PG_HOME}/${PG_VERSION}"
+  su ${PG_USER} -c "mkdir -p ${PG_HOME}/${PG_VERSION}/main"
+  su ${PG_USER} -c "chmod -R 775 ${PG_HOME}/${PG_VERSION}/main"
+  su ${PG_USER} -c "rm -rf ${PG_HOME}/${PG_VERSION}/main/*"
   deluser ${PG_USER} root
 
     case ${REPLICATION_MODE} in
