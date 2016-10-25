@@ -1,2 +1,3 @@
-0 2 * * * sh /var/lib/postgres/bin/pg_backup.sh > /var/log/backup.log 2>&1
+0 2 * * * sh /var/lib/postgres/bin/pg_backup.sh > /var/postgres/log/pg_backup.log 2>&1
 # Don't remove the empty line at the end of this file. It is required to run the cron job
+
