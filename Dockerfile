@@ -36,21 +36,14 @@ RUN usermod -u 1010 postgres
 RUN groupmod -g 1010 postgres
 
 # Add crontab file in the cron directory
-ADD crontab /etc/cron.d/backup
-RUN chmod 0644 /etc/cron.d/backup
+COPY crontab /etc/cron.d/backup
+RUN chmod 755 /etc/cron.d/backup
 
-# Create backup directories
-RUN mkdir -p ${PG_HOME}/bin
-RUN mkdir -p ${PG_HOME}/backup
-RUN mkdir -p ${PG_HOME}/log
-RUN chmod 775 ${PG_HOME}/bin
-RUN chmod 775 ${PG_HOME}/backup
-RUN chmod 775 ${PG_HOME}/log
 # Add files
-ADD pg_backup.sh ${PG_HOME}/bin
-RUN chmod 0644 ${PG_HOME}/bin/pg_backup.sh
-RUN touch ${PG_HOME}/log/pg_backup.log
-RUN chmod 0644 ${PG_HOME}/log/pg_backup.log
+COPY pg_backup.sh ${PG_HOME}
+RUN chmod 755 ${PG_HOME}/pg_backup.sh
+RUN touch ${PG_HOME}/pg_backup.log
+RUN chmod 0644 ${PG_HOME}/pg_backup.log
 ### END - SHIYGHAN ADDED 
 
 COPY runtime/ ${PG_APP_HOME}/
