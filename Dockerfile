@@ -37,18 +37,20 @@ RUN groupmod -g 1010 postgres
 
 # Add crontab file in the cron directory
 ADD crontab /etc/cron.d/backup
-# Give execution rights on the cron job
 RUN chmod 0644 /etc/cron.d/backup
 
-# Add crontab file in the cron directory
+# Create backup directories
 RUN mkdir -p ${PG_HOME}/bin
+RUN mkdir -p ${PG_HOME}/backup
 RUN mkdir -p ${PG_HOME}/log
-# Add crontab file in the cron directory
+RUN chmod 775 ${PG_HOME}/bin
+RUN chmod 775 ${PG_HOME}/backup
+RUN chmod 775 ${PG_HOME}/log
+# Add files
 ADD pg_backup.sh ${PG_HOME}/bin
-# Give execution rights on the cron job
 RUN chmod 0644 ${PG_HOME}/bin/pg_backup.sh
-# Create the log file to be able to run tail
 RUN touch ${PG_HOME}/log/pg_backup.log
+RUN chmod 0644 ${PG_HOME}/log/pg_backup.log
 ### END - SHIYGHAN ADDED 
 
 COPY runtime/ ${PG_APP_HOME}/
