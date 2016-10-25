@@ -40,10 +40,10 @@ COPY crontab /etc/cron.d/backup
 RUN chmod 755 /etc/cron.d/backup
 
 # Add files
-ADD pg_backup.sh /var/local/pg_backup.sh
-RUN chmod 775 /var/local/pg_backup.sh
-RUN touch /var/log/pg_backup.log
-RUN chmod 660 /var/log/pg_backup.log
+COPY pg_backup.sh /var/local/backup.sh
+RUN chmod 775 /var/local/backup.sh
+RUN touch /var/log/backup.log
+RUN chmod 660 /var/log/backup.log
 ### END - SHIYGHAN ADDED 
 
 COPY runtime/ ${PG_APP_HOME}/
