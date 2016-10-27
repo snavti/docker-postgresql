@@ -410,7 +410,7 @@ configure_postgresql() {
 
   # stop the postgres server
   # exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w stop >/dev/null
-  exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w stop >/dev/null
+  exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w stop
 
   # listen on all interfaces
   set_postgresql_param "listen_addresses" "*" quiet
