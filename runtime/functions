@@ -150,7 +150,7 @@ configure_hot_standby() {
 initialize_database() {
 
   if [[ ! -d ${PG_DATADIR} ]]; then
-  echo "Initializing database as ${PG_DATADIR} not found..."
+  echo "${PG_DATADIR} not found..."
   adduser ${PG_USER} root >/dev/null
   su ${PG_USER} -c "chmod -R 775 ${PG_HOME}/${PG_VERSION}"
   su ${PG_USER} -c "mkdir -p ${PG_HOME}/${PG_VERSION}/main"
