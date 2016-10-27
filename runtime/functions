@@ -15,6 +15,7 @@ exec_as_postgres() {
 }
 
 map_uidgid() {
+  echo "Mapping uid and gid..."
   USERMAP_ORIG_UID=$(id -u ${PG_USER})
   USERMAP_ORIG_GID=$(id -g ${PG_USER})
   USERMAP_GID=${USERMAP_GID:-${USERMAP_UID:-$USERMAP_ORIG_GID}}
@@ -69,6 +70,7 @@ create_rundir() {
 }
 
 set_postgresql_param() {
+  echo "Setting postgresql params..."
   local key=${1}
   local value=${2}
   local verbosity=${3:-verbose}
@@ -86,6 +88,7 @@ set_postgresql_param() {
 }
 
 set_recovery_param() {
+  echo "Setting recovert params..."
   local key=${1}
   local value=${2}
   local hide=${3}
@@ -102,6 +105,7 @@ set_recovery_param() {
 }
 
 set_hba_param() {
+  echo "Setting hba param..."
   local value=${1}
 
   if ! exec_as_postgres grep -q "$(sed "s| | \\\+|g" <<< ${value})" ${PG_HBA_CONF}; then
@@ -120,6 +124,7 @@ configure_ssl() {
   # fi
 
   if [[ -f ${PG_CERTDIR}/server.crt && -f ${PG_CERTDIR}/server.key ]]; then
+    echo "Setting SSL crt and key..."
     PG_SSL=${PG_SSL:-on}
     set_postgresql_param "ssl_cert_file" "${PG_CERTDIR}/server.crt"
     set_postgresql_param "ssl_key_file" "${PG_CERTDIR}/server.key"
@@ -145,6 +150,7 @@ configure_hot_standby() {
 initialize_database() {
 
   if [[ ! -d ${PG_DATADIR} ]]; then
+  echo "Initializing database as ${PG_DATADIR} not found..."
   adduser ${PG_USER} root >/dev/null
   su ${PG_USER} -c "chmod -R 775 ${PG_HOME}/${PG_VERSION}"
   su ${PG_USER} -c "mkdir -p ${PG_HOME}/${PG_VERSION}/main"
@@ -272,7 +278,7 @@ initialize_database() {
     set_hba_param "host all all samenet trust"
   fi
 
-  # allow remote connections to postgresql database
+  echo "Allowing remote connections to postgresql database..."
   set_hba_param "host all all 0.0.0.0/0 md5"
 }
 
@@ -307,6 +313,7 @@ configure_recovery() {
 
 create_user() {
   if [[ -n ${DB_USER} ]]; then
+    echo "Creating database users..."
     case $REPLICATION_MODE in
       slave|snapshot|backup)
         echo "INFO! Database user cannot be created on a $REPLICATION_MODE node. Skipping..."
