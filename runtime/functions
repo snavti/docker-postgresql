@@ -404,7 +404,7 @@ configure_postgresql() {
   # start postgres server internally for the creation of users and databases
   su ${PG_USER} -c "rm -rf ${PG_DATADIR}/postmaster.pid"
   adduser ${PG_USER} root >/dev/null
-  su ${PG_USER} -c "chmod -R 700 ${PG_HOME}/${PG_VERSION}/main"
+  su ${PG_USER} -c "chmod -R 770 ${PG_HOME}/${PG_VERSION}/main"
   deluser ${PG_USER} root >/dev/null
 
   set_postgresql_param "listen_addresses" "127.0.0.1" quiet
