@@ -18,7 +18,7 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
  && apt-get update \
  && apt-get install cron \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y acl \
-      postgresql-${PG_VERSION} postgresql-client-${PG_VERSION} postgresql-contrib-${PG_VERSION} postgresql-${PG_VERSION}-postgis-2.2 postgresql-${PG_VERSION}-postgis-2.2-scripts \
+      postgresql-${PG_VERSION} postgresql-client-${PG_VERSION} postgresql-contrib-${PG_VERSION} postgresql-${PG_VERSION}-postgis-2.1 postgresql-${PG_VERSION}-postgis-2.1-scripts \
  && ln -sf ${PG_DATADIR}/postgresql.conf /etc/postgresql/${PG_VERSION}/main/postgresql.conf \
  && ln -sf ${PG_DATADIR}/recovery.conf /etc/postgresql/${PG_VERSION}/main/recovery.conf \
  && ln -sf ${PG_DATADIR}/pg_hba.conf /etc/postgresql/${PG_VERSION}/main/pg_hba.conf \
