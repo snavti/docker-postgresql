@@ -2,7 +2,7 @@ FROM sameersbn/ubuntu:14.04.20160827
 MAINTAINER helpdesk@techequity.support
 
 ENV PG_APP_HOME="/etc/docker-postgresql"\
-    PG_VERSION=9.5 \
+    PG_VERSION=9.3 \
     PG_USER=postgres \
     PG_HOME=/var/lib/postgresql \
     PG_RUNDIR=/run/postgresql \
