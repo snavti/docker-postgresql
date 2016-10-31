@@ -2,7 +2,7 @@ FROM sameersbn/ubuntu:14.04.20160827
 MAINTAINER helpdesk@techequity.support
 
 ENV PG_APP_HOME="/etc/docker-postgresql"\
-    PG_VERSION=9.4 \
+    PG_VERSION=9.5 \
     PG_USER=postgres \
     PG_HOME=/var/lib/postgresql \
     PG_RUNDIR=/run/postgresql \
@@ -12,20 +12,20 @@ ENV PG_APP_HOME="/etc/docker-postgresql"\
 ENV PG_BINDIR=/usr/lib/postgresql/${PG_VERSION}/bin \
     PG_DATADIR=${PG_HOME}/${PG_VERSION}/main
 
-### BEGIN - SHIYGHAN ADDED postgresql-${PG_VERSION}-postgis-2.1 postgresql-${PG_VERSION}-postgis-2.1-scripts
+### BEGIN - SHIYGHAN ADDED postgresql-${PG_VERSION}-postgis-2.3 postgresql-${PG_VERSION}-postgis-2.3-scripts
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
  && echo 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
  && apt-get update \
  && apt-get install cron \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y acl \
-      postgresql-${PG_VERSION} postgresql-client-${PG_VERSION} postgresql-contrib-${PG_VERSION} postgresql-${PG_VERSION}-postgis-2.1 postgresql-${PG_VERSION}-postgis-2.1-scripts \
+      postgresql-${PG_VERSION} postgresql-client-${PG_VERSION} postgresql-contrib-${PG_VERSION} postgresql-${PG_VERSION}-postgis-2.3 postgresql-${PG_VERSION}-postgis-2.3-scripts \
  && ln -sf ${PG_DATADIR}/postgresql.conf /etc/postgresql/${PG_VERSION}/main/postgresql.conf \
  && ln -sf ${PG_DATADIR}/recovery.conf /etc/postgresql/${PG_VERSION}/main/recovery.conf \
  && ln -sf ${PG_DATADIR}/pg_hba.conf /etc/postgresql/${PG_VERSION}/main/pg_hba.conf \
  && ln -sf ${PG_DATADIR}/pg_ident.conf /etc/postgresql/${PG_VERSION}/main/pg_ident.conf \
  && rm -rf ${PG_HOME} \
  && rm -rf /var/lib/apt/lists/*
-### END - SHIYGHAN ADDED postgresql-${PG_VERSION}-postgis-2.1 postgresql-${PG_VERSION}-postgis-2.1-scripts
+### END - SHIYGHAN ADDED postgresql-${PG_VERSION}-postgis-2.3 postgresql-${PG_VERSION}-postgis-2.3-scripts
 
 ### BEGIN - SHIYGHAN ADDED 
 #Create group and user with GID & UID 1010.
